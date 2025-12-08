@@ -24,8 +24,21 @@ public class InventoryService {
     public void createInventoryItem(Inventory inventory){
         inventoryRepository.save(inventory);
     }
-    public void deleteInventoryItem(Long id){
+    public boolean deleteInventoryItem(Long id){
+        if (!inventoryRepository.existsById(id)){
+            return false;
+        }
         inventoryRepository.deleteById(id);
+        return true;
+    }
+    public Inventory updateStock(Long id,int change){
+        Inventory item = inventoryRepository.findById(id).orElseThrow(()-> new RuntimeException("Item not found!"));
+        int newStock = item.getQuantity()+change;
+        if (newStock < 0){
+            throw new IllegalArgumentException("Stock cannot go below zero!");
+        }
+        item.setQuantity(newStock);
+        return inventoryRepository.save(item);
     }
     public void updateInventoryItem(Inventory updatedInventory, Long id){
         inventoryRepository.findById(id).ifPresent(existingInventory->{
